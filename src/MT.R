@@ -29,7 +29,7 @@ MCF = function(p.org, p.next, alpha , n.rep=1000){
     randp.ecdf[(i*n.test+1):((i+1)*n.test)] <- randp
     # Storey's estimator with lambda = 0.5
     storey.lambda = 0.5
-    sum.pi0 = sum.pi0 + (sum(randp > storey.lambda)+1) / ((1-storey.lambda)*5000)
+    sum.pi0 = sum.pi0 + (sum(randp > storey.lambda)) / ((1-storey.lambda)*5000)
   }
   
   ### average pi0 ##################
@@ -57,9 +57,10 @@ MCF = function(p.org, p.next, alpha , n.rep=1000){
   
   # find MCF values corresponding to lambda.star
   mcf.value <- mcf(p.org, p.next, lambda.star)
+    
   REJ <- rep(0,n.test)
-  rej.idx = sort(mcf.value, decreasing = T, index.return = T)$ix[1:num.rej]
-  REJ[rej.idx]=1
+  rej.mcf <- which(r >= quantile(r, probs = 1-cdf))
+  REJ[rej.mcf]=1
   
   return(list(REJ=REJ,pi0=pi0))
 }
