@@ -29,7 +29,7 @@ MCF = function(p.org, p.next, alpha , n.rep=1000){
     randp.ecdf[(i*n.test+1):((i+1)*n.test)] <- randp
     # Storey's estimator with lambda = 0.5
     storey.lambda = 0.5
-    sum.pi0 = sum.pi0 + (sum(randp > storey.lambda)) / ((1-storey.lambda)*5000)
+    sum.pi0 = sum.pi0 + (sum(randp > storey.lambda)) / ((1-storey.lambda)*n.test)
   }
   
   ### average pi0 ##################
