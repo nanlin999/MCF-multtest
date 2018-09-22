@@ -1,21 +1,52 @@
 library(qvalue)  
 library(Rcpp)
-sourceCpp("/Users/xiaoyudai/Documents/multiple-testing/Rcode/Rcpp/MCF.cpp")
+sourceCpp("~/MCF.cpp")
 
-### CD4 VS CD8 ###
+### New comparison using data with 1 replicate ###
 
-ORG <- read.table("/Users/xiaoyudai/Documents/multiple-testing/Comparison/CD8_ES/CD8_ES.txt", header=F)
+Brain_CpG = read.table("~/Data/Brain/HuFGM02_BrainGerminalMatrix_Bisulfite-Seq_A04698_CpG.bedGraph", header = F)
+Brain_density = read.table("~/Data/Brain/HuFGM02_BrainGerminalMatrix_Bisulfite-Seq_A04698_density.bedGraph", header = F)
+
+colnames(Brain_CpG) = c('chr', 'start', 'end', 'ratio')
+colnames(Brain_density) = c('chr', 'start', 'end', 'total')
+
+brain_all = merge(Brain_CpG, Brain_density, by = c('chr','start','end'), sort = F)
+brain_all[,'brain_methy'] = round(brain_all$ratio * brain_all$total)
+brain_all[,'brain_unmethy'] = brain_all$total - brain_all$brain_methy
+
+H1ES = read.table("~/Data/H1ES/E003.methcount", header = F)
+colnames(H1ES) = c('chr', 'start', 'end', 'es_methy', 'es_total')
+H1ES[,'es_unmethy'] = H1ES$es_total - H1ES$es_methy
+
+skin_cpg = read.table("~/Data/Skin/E058.fm.bedGraph", header = F)
+skin_density = read.table("~/Data/Skin/E058.rc.bedGraph", header = F)
+
+colnames(skin_cpg) = c('chr', 'start', 'end', 'ratio')
+colnames(skin_density) = c('chr', 'start', 'end', 'total')
+skin_all = merge(skin_cpg, skin_density, by = c('chr','start','end'), sort = F)
+skin_all[,'skin_methy'] = round(skin_all$ratio * skin_all$total)
+skin_all[,'skin_unmethy'] = skin_all$total - skin_all$skin_methy
 
 
-Z1 = ORG[,4] +ORG[,6]
-Z2 = ORG[,5] +ORG[,7] - (ORG[,4] +ORG[,6])
-Z3 = ORG[,8] +ORG[,10]
-Z4 = ORG[,9] +ORG[,11] - (ORG[,8] +ORG[,10])
+
+sub1 = brain_all[,c('chr', 'start', 'end', 'brain_methy', 'brain_unmethy')]
+sub2 = skin_all[,c('chr', 'start', 'end', 'skin_methy', 'skin_unmethy')]
+sub2 = H1ES[,c('chr', 'start', 'end', 'es_methy', 'es_unmethy')]
+
+Brain_ES_raw = merge(sub1, sub2, by = c('chr','start','end'), sort = F)
+Skin_ES_raw = merge(sub1, sub2, by = c('chr','start','end'), sort = F)
+Brain_Skin_raw = merge(sub1, sub2, by = c('chr','start','end'), sort = F)
+
+
+ORG = Brain_Skin_raw
+Z1 = Brain_Skin_raw$brain_methy
+Z2 = Brain_Skin_raw$brain_unmethy
+Z3 = Brain_Skin_raw$skin_methy
+Z4 = Brain_Skin_raw$skin_unmethy
 
 
 # remove small counts
 counts_cutoff = 15
-idx = which((Z1+Z2)<counts_cutoff|(Z3+Z4)<counts_cutoff)
 idx = which((Z1+Z2)<counts_cutoff|(Z3+Z4)<counts_cutoff)
 V = ORG[-idx,]
 Z1 = Z1[-idx]
@@ -61,7 +92,7 @@ for(i in 0:(n.rep-1)){
   print(i)  
 }
 
-sourceCpp("/Users/xiaoyudai/Documents/multiple-testing/Rcode/Rcpp/MCF.cpp")
+sourceCpp("~/MCF.cpp")
 ### under FDR nominal level 0.1 ########################
 a = 0.00001
 b = 0.1
@@ -132,59 +163,7 @@ c(sum(REJ005), sum(REJC005), sum(REJ005*REJC005))
 
 
 ALL = data.frame(cbind(V,p.org,p.next,REJ010,REJC010,REJ005,REJC005))
-colnames(ALL) = c('chrome','start','end','A1','A2','A3','A4','B1','B2','B3','B4', 'porg','pnext', 'MCF010','Qvalue010', 'MCF005','Qvalue005')
-write.table(ALL,"/Users/xiaoyudai/Documents/multiple-testing/Comparison/CD4_CD8/ALL.txt",row.name=F,quote=FALSE)
-
-
-### MCF to find DMR
-library(DSS)
-ALL <- read.table("/Users/xiaoyudai/Documents/multiple-testing/Comparison/CD8_ES/ALL.txt", header=T)
-### under FDR nominal level 0.1 ##############
-MCF = ALL[,14]
-Qvalue = ALL[,15]
-
-data = data.frame(matrix(rep(0,11*nrow(ALL)),ncol=11))
-colnames(data) = c('chr','pos','mu1','mu2','diff','diff.se','stat','phi1','phi2','pval','fdr')
-
-data1 = data
-data1[,1:2] = ALL[,1:2]
-data1[,10] = 1-MCF
-data1[,3] = (ALL[,4]+ALL[,6])/(ALL[,5]+ALL[,7])
-data1[,4] = (ALL[,8]+ALL[,10])/(ALL[,9]+ALL[,11])
-data1[,5] = data1[,3]-data1[,4]
-# dmrs1 <- callDMR(data1, p.threshold=0.01,minlen=1000,dis.merge=100,pct.sig=0.5,minCG = 20)
-dmrs1 <- callDMR(data1, p.threshold=0.01,minlen=500,dis.merge=100,pct.sig=0.5)
-dim(dmrs1)
-
-data2 = data
-data2[,1:2] = ALL[,1:2]
-data2[,10] = 1-Qvalue
-data2[,3] = (ALL[,4]+ALL[,6])/(ALL[,5]+ALL[,7])
-data2[,4] = (ALL[,8]+ALL[,10])/(ALL[,9]+ALL[,11])
-data2[,5] = data2[,3]-data2[,4]
-# dmrs2 <- callDMR(data2, p.threshold=0.01,minlen=1000,dis.merge=100,pct.sig=0.5,minCG = 20)
-dmrs2 <- callDMR(data2, p.threshold=0.01,minlen=500,dis.merge=100,pct.sig=0.5)
-dim(dmrs2)
-
-write.table(dmrs1[,1:3],"/Users/xiaoyudai/Documents/multiple-testing/Comparison/bedtools/CD4_ES/MCF010.txt",
-            row.names=F, quote=FALSE, col.names=F, sep = "\t")
-write.table(dmrs2[,1:3],"/Users/xiaoyudai/Documents/multiple-testing/Comparison/bedtools/CD4_ES/Q010.txt",
-            row.name=F, quote=FALSE, col.names=F, sep = "\t")
-
-write.table(dmrs1[,1:8],"/Users/xiaoyudai/Documents/multiple-testing/Comparison/CD4_CD8/MCF010.txt",row.name=F,quote=FALSE)
-write.table(dmrs2[,1:8],"/Users/xiaoyudai/Documents/multiple-testing/Comparison/CD4_CD8/Q010.txt",row.name=F,quote=FALSE)
-
-### under FDR nominal level 0.05 ##############
- 
-write.table(dmrs1[,1:3],"/Users/xiaoyudai/Documents/multiple-testing/Comparison/bedtools/CD4_CD8/MCF005.txt",
-            row.names=F, quote=FALSE, col.names=F, sep = "\t")
-write.table(dmrs2[,1:3],"/Users/xiaoyudai/Documents/multiple-testing/Comparison/bedtools/CD4_CD8/Q005.txt",
-            row.name=F, quote=FALSE, col.names=F, sep = "\t")
-
-
-write.table(dmrs1[,1:8],"/Users/xiaoyudai/Documents/multiple-testing/Comparison/CD4_ES/MCF005.txt",row.name=F,quote=FALSE)
-write.table(dmrs2[,1:8],"/Users/xiaoyudai/Documents/multiple-testing/Comparison/CD4_ES/Q005.txt",row.name=F,quote=FALSE)
-
-
-
+# colnames(ALL) = c('chrome','start','end','A1','A2','A3','A4','B1','B2','B3','B4', 'porg','pnext', 'MCF010','Qvalue010', 'MCF005','Qvalue005')
+colnames(ALL) = c('chrome','start','end','A1','A2','B1','B2', 'porg','pnext', 'MCF010','Qvalue010', 'MCF005','Qvalue005')
+write.table(ALL,"~/Skin_ES/ALL.txt",row.name=F,quote=FALSE)
 
