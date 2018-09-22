@@ -163,7 +163,7 @@ plt4 <- ggplot(dt, aes(mcf, linetype = cdf)) +
   ylab("")
 plt4
 
-pdf("/Users/xiaoyudai/Documents/Paper/Simu_rep/Condition_check.pdf",width=12,height=8)
+pdf("~/Simu_rep/Condition_check.pdf",width=12,height=8)
 multiplot(plt3, plt4, plt1, plt2, cols=2)
 dev.off()
 
