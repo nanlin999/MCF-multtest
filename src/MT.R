@@ -1,10 +1,10 @@
 library(Rcpp)
-sourceCpp("/Users/xiaoyudai/Documents/Paper/Rcode/mcf.cpp")
+sourceCpp("~/Rcode/mcf.cpp")
 
 MCF = function(p.org, p.next, alpha , n.rep=1000){
   # MCF-based multiple testing procedure.
   # References: 
-  #  Dai, X., Lin, N., Li, D., Wang, T.(2016) A non-randomized procedure for discrete multiple testing based on randomized test. (submitted)
+  #  Dai, X., Lin, N., Li, D., Wang, T. A non-randomized procedure for discrete multiple testing based on randomized test. (submitted)
   # Input:
   #   p.org:  raw p-value for each test
   #   p.next: the next possible smaller p-value, i.e. p^-
@@ -29,7 +29,7 @@ MCF = function(p.org, p.next, alpha , n.rep=1000){
     randp.ecdf[(i*n.test+1):((i+1)*n.test)] <- randp
     # Storey's estimator with lambda = 0.5
     storey.lambda = 0.5
-    sum.pi0 = sum.pi0 + (sum(randp > storey.lambda)) / ((1-storey.lambda)*n.test)
+    sum.pi0 = sum.pi0 + (sum(randp > storey.lambda)+1) / ((1-storey.lambda)*5000)
   }
   
   ### average pi0 ##################
@@ -61,7 +61,7 @@ MCF = function(p.org, p.next, alpha , n.rep=1000){
   REJ <- rep(0,n.test)
   rej.mcf <- which(r >= quantile(r, probs = 1-cdf))
   REJ[rej.mcf]=1
-  
+    
   return(list(REJ=REJ,pi0=pi0))
 }
 
