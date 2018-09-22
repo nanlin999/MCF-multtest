@@ -624,7 +624,7 @@ p6 <- ggplot(FDR.sd, aes(x = alpha, y = sd, linetype=method, size=method)) +
   scale_size_manual(values=c(0.3,0.3))
 p6
 ### save the plot ####################
-pdf("/Users/xiaoyudai/Documents/Paper/Simu_rep/FET/fet.pdf",width=8,height=12)
+pdf("~/Simu_rep/FET/fet.pdf",width=8,height=12)
 
 grid_arrange_shared_legend(p1,p4,p2, p5,p3,p6)
 
@@ -664,7 +664,7 @@ p8 <- ggplot(FNR, aes(x = alpha, y = fnr, linetype=method, size=method)) +
   ggtitle(expression(paste(mu[1],' = ',mu[2],' = 20')))
 p8
 
-pdf("/Users/xiaoyudai/Documents/Paper/Simu_rep/FET/fet_FNR.pdf",width=8,height=12)
+pdf("~/Simu_rep/FET/fet_FNR.pdf",width=8,height=12)
 grid_arrange_shared_legend(p7,p8)
 dev.off()
 
