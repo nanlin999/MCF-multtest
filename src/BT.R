@@ -646,14 +646,10 @@ p8 <- ggplot(FDR.sd, aes(x = alpha, y = sd, linetype=method, size=method)) +
   scale_size_manual(values=c(0.3,0.3))
 p8
 ### save the plot ####################
-pdf("/Users/xiaoyudai/Documents/Paper/Simu_rep/BT/bt.pdf",width=8,height=12)
+pdf("~/Simu_rep/BT/bt.pdf",width=8,height=12)
 grid_arrange_shared_legend(p1,p5,p2, p6,p4,p8)
 dev.off()
 
-pdf("/Users/xiaoyudai/Documents/Paper/Simu_rep/BT/bt_FNR.pdf",width=8,height=12)
+pdf("~/Simu_rep/BT/bt_FNR.pdf",width=8,height=12)
 grid_arrange_shared_legend(p3,p7)
 dev.off()
-
-
-
-
