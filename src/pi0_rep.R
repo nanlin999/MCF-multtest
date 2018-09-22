@@ -207,7 +207,7 @@ p4 <- ggplot(data=dt3, aes(x=x, y=y)) +
   ggtitle(expression(paste('            setup2: ',mu,' = 10')))
 
 
-pdf("/Users/xiaoyudai/Documents/Paper/Simu_rep/pi/pi09.pdf",width=8,height=6)
+pdf("~/Simu_rep/pi/pi09.pdf",width=8,height=6)
 
 multiplot(p1, p2, p3, p4, cols=2)
 
