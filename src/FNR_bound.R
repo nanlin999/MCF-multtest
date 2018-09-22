@@ -160,4 +160,3 @@ FNR_bound_fet <- function(lambda1, lambda2) {
   }
   return(list(alpha=alpha.all, pFNR_bound=pFNR_bound))
 }
-
